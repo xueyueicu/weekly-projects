@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block title %}注册 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">用户注册</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">账号类型</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="student">学生</option>
+                            <option value="club_leader">社长</option>
+                        </select>
+                        <small class="text-muted">如需其他权限，请联系系统管理员</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="real_name" class="form-label">真实姓名</label>
+                        <input type="text" class="form-control" id="real_name" name="real_name" required>
+                    </div>
+                    <div class="mb-3 student-field">
+                        <label for="class_name" class="form-label">班级</label>
+                        <input type="text" class="form-control" id="class_name" name="class_name">
+                        <small class="text-muted">学生必填</small>
+                    </div>
+                    <div class="mb-3 club-leader-field" style="display:none;">
+                        <label for="club_name" class="form-label">社团名称</label>
+                        <input type="text" class="form-control" id="club_name" name="club_name">
+                        <small class="text-muted">社长必填，管理员审核后生效</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">电话</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">注册</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 根据选择的角色显示/隐藏相关字段
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('role');
+        const studentFields = document.getElementsByClassName('student-field');
+        const clubLeaderFields = document.getElementsByClassName('club-leader-field');
+        
+        // 初始化显示/隐藏字段
+        updateFieldsVisibility(roleSelect.value);
+        
+        // 监听角色选择变化
+        roleSelect.addEventListener('change', function() {
+            updateFieldsVisibility(this.value);
+        });
+        
+        // 根据角色更新字段显示状态
+        function updateFieldsVisibility(role) {
+            // 处理学生字段
+            for (let i = 0; i < studentFields.length; i++) {
+                studentFields[i].style.display = role === 'student' ? 'block' : 'none';
+                if (role === 'student') {
+                    const input = studentFields[i].querySelector('input');
+                    if (input) input.required = true;
+                } else {
+                    const input = studentFields[i].querySelector('input');
+                    if (input) input.required = false;
+                }
+            }
+            
+            // 处理社长字段
+            for (let i = 0; i < clubLeaderFields.length; i++) {
+                clubLeaderFields[i].style.display = role === 'club_leader' ? 'block' : 'none';
+                if (role === 'club_leader') {
+                    const input = clubLeaderFields[i].querySelector('input');
+                    if (input) input.required = true;
+                } else {
+                    const input = clubLeaderFields[i].querySelector('input');
+                    if (input) input.required = false;
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

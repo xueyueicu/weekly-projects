@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ club.name }} - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ club.name }}</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h4>社团介绍</h4>
+                <p>{{ club.description }}</p>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        社团信息
+                    </div>
+                    <div class="card-body">
+                        <p><strong>联系方式：</strong> {{ club.president_contact }}</p>
+                        <p><strong>社团规模：</strong> {{ club.scale }}</p>
+                        <p><strong>社团评分：</strong> {{ club.score }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">社团活动</h4>
+    </div>
+    <div class="card-body">
+        {% if activities %}
+            <div class="row">
+                {% for activity in activities %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ activity.title }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ activity.description | truncate(100) }}</p>
+                                <p><small class="text-muted">活动时间: {{ activity.event_date.strftime('%Y-%m-%d') }}</small></p>
+                                <p><small class="text-muted">活动地点: {{ activity.location }}</small></p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('student.activity_detail', activity_id=activity.id) }}" class="btn btn-primary btn-sm">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">该社团暂无活动</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ activity.title }} - 活动参与者 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ activity.title }} - 活动参与者</h3>
+            <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-outline-light">返回活动详情</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- 活动基本信息 -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>社团：</strong> {{ activity.club.name }}</p>
+                    <p><strong>活动时间：</strong> {{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>活动地点：</strong> {{ activity.location }}</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><strong>已报名人数：</strong> {{ registrations|length }}</p>
+                    <p><strong>人数限制：</strong> {% if activity.max_participants > 0 %}{{ activity.max_participants }}人{% else %}不限{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 参与者列表 -->
+        <div class="mt-4">
+            <h4>报名学生列表</h4>
+            
+            {% if registrations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>班级</th>
+                                <th>联系方式</th>
+                                <th>报名时间</th>
+                                <th>状态</th>
+                                {% if current_user.is_super_admin or current_user.is_admin or 
+                                   (current_user.is_club_leader and activity.club.leader_id == current_user.id) or
+                                   (current_user.is_club_teacher and activity.club.teacher_id == current_user.id) %}
+                                <th>操作</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reg in registrations %}
+                                <tr>
+                                    <td>{{ reg.student.real_name }}</td>
+                                    <td>{{ reg.student.class_name }}</td>
+                                    <td>
+                                        {% if reg.student.phone %}
+                                            <a href="tel:{{ reg.student.phone }}">{{ reg.student.phone }}</a>
+                                        {% elif reg.student.email %}
+                                            <a href="mailto:{{ reg.student.email }}">{{ reg.student.email }}</a>
+                                        {% else %}
+                                            未提供
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reg.registered_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if reg.status == 'registered' %}
+                                            <span class="badge bg-primary">已报名</span>
+                                        {% elif reg.status == 'attended' %}
+                                            <span class="badge bg-success">已参加</span>
+                                        {% elif reg.status == 'absent' %}
+                                            <span class="badge bg-danger">未参加</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if current_user.is_super_admin or current_user.is_admin or 
+                                       (current_user.is_club_leader and activity.club.leader_id == current_user.id) or
+                                       (current_user.is_club_teacher and activity.club.teacher_id == current_user.id) %}
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <form action="{{ url_for('club.mark_participant', registration_id=reg.id, status='attended') }}" method="post" class="me-1">
+                                                <button type="submit" class="btn btn-sm btn-success" {% if reg.status == 'attended' %}disabled{% endif %}>标记已参加</button>
+                                            </form>
+                                            <form action="{{ url_for('club.mark_participant', registration_id=reg.id, status='absent') }}" method="post" class="me-1">
+                                                <button type="submit" class="btn btn-sm btn-danger" {% if reg.status == 'absent' %}disabled{% endif %}>标记未参加</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p class="mb-0">暂无学生报名此活动</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- 导出按钮 -->
+        {% if registrations and (current_user.is_super_admin or current_user.is_admin or 
+                               (current_user.is_club_leader and activity.club.leader_id == current_user.id) or
+                               (current_user.is_club_teacher and activity.club.teacher_id == current_user.id)) %}
+        <div class="mt-3 text-end">
+            <a href="{{ url_for('club.export_participants', activity_id=activity.id) }}" class="btn btn-primary">
+                <i class="bi bi-download"></i> 导出名单
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

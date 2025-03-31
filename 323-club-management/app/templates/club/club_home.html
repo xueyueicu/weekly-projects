@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ club.name }} - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ club.name }}</h3>
+            {% if club.type %}
+                <span class="badge 
+                    {% if club.type == '科技类' %}bg-info
+                    {% elif club.type == '公益类' %}bg-success
+                    {% elif club.type == '学术类' %}bg-primary
+                    {% elif club.type == '活动类' %}bg-warning
+                    {% elif club.type == '文化类' %}bg-secondary
+                    {% elif club.type == '体育类' %}bg-danger
+                    {% elif club.type == '艺术类' %}bg-dark
+                    {% else %}bg-secondary{% endif %} fs-6">
+                    {{ club.type }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h4>社团简介</h4>
+                <p>{{ club.description or '暂无社团简介' }}</p>
+                
+                {% if club.leader %}
+                <h4>社长信息</h4>
+                <p>姓名：{{ club.leader.real_name }}</p>
+                <p>联系方式：{{ club.president_contact or club.leader.phone or club.leader.email or '未设置' }}</p>
+                {% endif %}
+                
+                {% if club.teacher %}
+                <h4>指导老师</h4>
+                <p>姓名：{{ club.teacher.real_name }}</p>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">社团信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>社团类型：</strong> {{ club.type or '未设置' }}</p>
+                        <p><strong>社团评分：</strong> {{ club.score or '暂无评分' }}</p>
+                        <p><strong>创建时间：</strong> {{ club.created_at.strftime('%Y-%m-%d') if club.created_at else '未知' }}</p>
+                        <p><strong>活动数量：</strong> {{ activities|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">社团活动</h3>
+    </div>
+    <div class="card-body">
+        {% if activities %}
+            <div class="row">
+                {% for activity in activities %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}">
+                                        {{ activity.title }}
+                                    </a>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>时间：</strong> {{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <p><strong>地点：</strong> {{ activity.location }}</p>
+                                <p><strong>人数限制：</strong> {{ activity.max_participants if activity.max_participants > 0 else '不限' }}</p>
+                                <p>{{ activity.description|truncate(100) }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                {% if current_user.is_authenticated and current_user.role == 'student' %}
+                                    <a href="#" class="btn btn-sm btn-success">报名参加</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">该社团暂无活动。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

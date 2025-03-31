@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑社团资料 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">编辑社团资料</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">社团名称</label>
+                <input type="text" class="form-control" id="name" value="{{ club.name }}" disabled>
+                <small class="text-muted">社团名称不可修改，如需更改请联系管理员</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">社团简介 <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="description" name="description" rows="10" required>{{ club.description }}</textarea>
+                <small class="text-muted">详细描述社团宗旨、活动方向等</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="type" class="form-label">社团类型 <span class="text-danger">*</span></label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="" {% if not club.type %}selected{% endif %}>请选择社团类型</option>
+                    {% for type in club_types %}
+                        <option value="{{ type }}" {% if club.type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">选择最适合贵社团的类型</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="president_contact" class="form-label">社长联系方式 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="president_contact" name="president_contact" value="{{ club.president_contact }}" required>
+                <small class="text-muted">用于学生联系社团</small>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('club.my_club') }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">保存更改</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

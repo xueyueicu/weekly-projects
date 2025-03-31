@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ activity.title }} - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ activity.title }}</h3>
+            <div>
+                {% if activity.approved %}
+                    <span class="badge bg-success">已审核</span>
+                {% else %}
+                    <span class="badge bg-warning">待审核</span>
+                {% endif %}
+                
+                {% if current_user.is_authenticated and (current_user.is_super_admin or current_user.is_admin or 
+                    (current_user.is_club_leader and activity.club.leader_id == current_user.id) or
+                    (current_user.is_club_teacher and activity.club.teacher_id == current_user.id)) %}
+                    <a href="{{ url_for('club.view_participants', activity_id=activity.id) }}" class="btn btn-sm btn-info ms-2">查看参与者</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- 活动基本信息 -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4>活动详情</h4>
+                    <p style="white-space: pre-line;">{{ activity.description }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">活动信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>发布者：</strong> {{ activity.publisher.real_name }}</p>
+                            <p><strong>所属社团：</strong> <a href="{{ url_for('club.club_home', club_id=activity.club.id) }}">{{ activity.club.name }}</a></p>
+                            <p><strong>活动时间：</strong> {{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>活动地点：</strong> {{ activity.location }}</p>
+                            <p><strong>发布时间：</strong> {{ activity.published_at.strftime('%Y-%m-%d') }}</p>
+                            <p><strong>人数限制：</strong> {% if activity.max_participants > 0 %}{{ activity.max_participants }}人{% else %}不限{% endif %}</p>
+                            <p><strong>已报名人数：</strong> {{ activity.enroll_count }}</p>
+                            <p><strong>浏览次数：</strong> {{ activity.click_count }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 社团联系方式 -->
+                    {% if activity.club.president_contact %}
+                    <div class="card border-secondary mt-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">联系方式</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ activity.club.president_contact }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 报名按钮 -->
+        {% if current_user.is_authenticated and current_user.is_student and activity.approved %}
+            <div class="d-grid gap-2 col-md-6 mx-auto mb-4">
+                {% if is_enrolled %}
+                    <button class="btn btn-secondary" disabled>已报名</button>
+                {% else %}
+                    <form method="post" action="{{ url_for('student.enroll', activity_id=activity.id) }}">
+                        <button type="submit" class="btn btn-success w-100">报名参加</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <!-- 评论区 -->
+        <div class="mt-5">
+            <h4>活动评论 ({{ comments|length }})</h4>
+            
+            {% if current_user.is_authenticated and activity.approved %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('student.add_comment', activity_id=activity.id) }}">
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">发表评论</label>
+                                <textarea class="form-control" id="comment" name="content" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">提交评论</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if comments %}
+                <div class="comments-list">
+                    {% for comment in comments %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="card-title">{{ comment.user.real_name if comment.user else '未知用户' }}</h5>
+                                    <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                                <p class="card-text">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p class="mb-0">暂无评论</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}活动日历 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">活动日历</h3>
+            <div>
+                <a href="{{ url_for('main.activity_calendar', year=prev_year, month=prev_month) }}" class="btn btn-sm btn-outline-light me-2">
+                    <i class="bi bi-chevron-left"></i> 上一月
+                </a>
+                <a href="{{ url_for('main.activity_calendar', year=today.year, month=today.month) }}" class="btn btn-sm btn-outline-light">
+                    今天
+                </a>
+                <a href="{{ url_for('main.activity_calendar', year=next_year, month=next_month) }}" class="btn btn-sm btn-outline-light ms-2">
+                    下一月 <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <h2 class="text-center mb-4">{{ month_name }}</h2>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="calendar-header">
+                    <tr>
+                        <th class="text-center">星期日</th>
+                        <th class="text-center">星期一</th>
+                        <th class="text-center">星期二</th>
+                        <th class="text-center">星期三</th>
+                        <th class="text-center">星期四</th>
+                        <th class="text-center">星期五</th>
+                        <th class="text-center">星期六</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in cal %}
+                        <tr>
+                            {% for day in week %}
+                                {% if day != 0 %}
+                                    {% set is_today = day == today.day and month == today.month and year == today.year %}
+                                    <td class="calendar-day {% if is_today %}current-day{% endif %}">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold {% if is_today %}text-primary{% endif %}">{{ day }}</span>
+                                            {% if day in activity_by_day %}
+                                                <span class="badge bg-primary rounded-pill">{{ activity_by_day[day]|length }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if day in activity_by_day %}
+                                            {% for activity_info in activity_by_day[day] %}
+                                                <div class="calendar-event {% if activity_info.is_past %}past-event{% else %}future-event{% endif %}">
+                                                    <a href="{{ url_for('main.view_activity', activity_id=activity_info.activity.id) }}" class="text-decoration-none">
+                                                        <div class="small fw-bold">{{ activity_info.activity.title|truncate(20) }}</div>
+                                                        <div class="small text-muted">{{ activity_info.activity.event_date.strftime('%H:%M') }} | {{ activity_info.activity.club.name }}</div>
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <h4>本月活动列表</h4>
+            {% set all_month_activities = [] %}
+            {% for day, activities in activity_by_day.items() %}
+                {% for activity_info in activities %}
+                    {% set _ = all_month_activities.append(activity_info) %}
+                {% endfor %}
+            {% endfor %}
+            
+            {% if all_month_activities %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>活动名称</th>
+                                <th>社团</th>
+                                <th>日期</th>
+                                <th>时间</th>
+                                <th>地点</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity_info in all_month_activities|sort(attribute='activity.event_date') %}
+                                <tr class="{% if activity_info.is_past %}table-secondary{% else %}table-success{% endif %}">
+                                    <td>{{ activity_info.activity.title }}</td>
+                                    <td>{{ activity_info.activity.club.name }}</td>
+                                    <td>{{ activity_info.activity.event_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ activity_info.activity.event_date.strftime('%H:%M') }}</td>
+                                    <td>{{ activity_info.activity.location }}</td>
+                                    <td>
+                                        {% if activity_info.is_past %}
+                                            <span class="badge bg-secondary">已结束</span>
+                                        {% else %}
+                                            <span class="badge bg-success">即将开始</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.view_activity', activity_id=activity_info.activity.id) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                        {% if current_user.is_authenticated and current_user.is_student and not activity_info.is_past %}
+                                            {% set is_enrolled = current_user.registrations.filter_by(activity_id=activity_info.activity.id).first() %}
+                                            {% if not is_enrolled %}
+                                                <form action="{{ url_for('student.enroll', activity_id=activity_info.activity.id) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-success">报名</button>
+                                                </form>
+                                            {% else %}
+                                                <span class="badge bg-secondary">已报名</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p class="mb-0">本月暂无活动</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.calendar-event {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.past-event {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+}
+
+.future-event {
+    background-color: #e8f5e9;
+    border-left: 3px solid #28a745;
+}
+
+.current-day {
+    background-color: #e3f2fd;
+}
+</style>
+{% endblock %} 

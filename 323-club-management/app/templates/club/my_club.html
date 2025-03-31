@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}我的社团 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{{ club.name }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>社团简介</h4>
+                        <p>{{ club.description or '暂无社团简介' }}</p>
+                        
+                        <h4>社团规模</h4>
+                        <p>{{ club.scale or '未设置' }}</p>
+                        
+                        <h4>联系方式</h4>
+                        <p>{{ club.president_contact or '未设置' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('club.edit_club_profile') }}" class="btn btn-primary">编辑社团资料</a>
+                            <a href="{{ url_for('club.new_activity') }}" class="btn btn-success">发布新活动</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">社团数据</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>社团评分：</strong> {{ club.score or '暂无评分' }}</p>
+                <p><strong>活动总数：</strong> {{ activities|length }}</p>
+                <p><strong>审核通过活动：</strong> {{ activities|selectattr('approved', 'equalto', true)|list|length }}</p>
+                <p><strong>待审核活动：</strong> {{ activities|selectattr('approved', 'equalto', false)|list|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">我的活动</h3>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-3" id="activityTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-activities" type="button" role="tab" aria-controls="all-activities" aria-selected="true">全部活动</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved-activities" type="button" role="tab" aria-controls="approved-activities" aria-selected="false">已审核</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-activities" type="button" role="tab" aria-controls="pending-activities" aria-selected="false">待审核</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="activityTabsContent">
+            <!-- 全部活动 -->
+            <div class="tab-pane fade show active" id="all-activities" role="tabpanel" aria-labelledby="all-tab">
+                {% include 'club/activity_list.html' with context %}
+            </div>
+            
+            <!-- 已审核活动 -->
+            <div class="tab-pane fade" id="approved-activities" role="tabpanel" aria-labelledby="approved-tab">
+                {% with filtered_activities = activities|selectattr('approved', 'equalto', true)|list %}
+                    {% set activities = filtered_activities %}
+                    {% include 'club/activity_list.html' with context %}
+                {% endwith %}
+            </div>
+            
+            <!-- 待审核活动 -->
+            <div class="tab-pane fade" id="pending-activities" role="tabpanel" aria-labelledby="pending-tab">
+                {% with filtered_activities = activities|selectattr('approved', 'equalto', false)|list %}
+                    {% set activities = filtered_activities %}
+                    {% include 'club/activity_list.html' with context %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

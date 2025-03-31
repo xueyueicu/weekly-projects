@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block title %}活动管理 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">活动管理</h3>
+    </div>
+    <div class="card-body">
+        <!-- 活动列表 -->
+        {% if activities %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>标题</th>
+                            <th>社团</th>
+                            <th>发布者</th>
+                            <th>时间</th>
+                            <th>地点</th>
+                            <th>状态</th>
+                            <th>点击量</th>
+                            <th>评分</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                            <tr>
+                                <td>{{ activity.id }}</td>
+                                <td>
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}">
+                                        {{ activity.title[:30] }}{% if activity.title|length > 30 %}...{% endif %}
+                                    </a>
+                                </td>
+                                <td>{{ activity.club.name if activity.club else '-' }}</td>
+                                <td>{{ activity.publisher.real_name if activity.publisher else '-' }}</td>
+                                <td>{{ activity.event_date.strftime('%Y-%m-%d %H:%M') if activity.event_date else '-' }}</td>
+                                <td>{{ activity.location or '-' }}</td>
+                                <td>
+                                    {% if activity.approved %}
+                                        <span class="badge bg-success">已审核</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">待审核</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ activity.click_count or 0 }}</td>
+                                <td>{{ activity.feedback_score or 0 }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if not activity.approved %}
+                                            <form action="{{ url_for('admin.approve_activity', activity_id=activity.id) }}" method="post">
+                                                <button type="submit" class="btn btn-sm btn-success">审核通过</button>
+                                            </form>
+                                        {% endif %}
+                                        <form action="{{ url_for('admin.delete_activity', activity_id=activity.id) }}" method="post" onsubmit="return confirm('确定要删除活动 {{ activity.title }} 吗？此操作无法撤销!');">
+                                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">当前没有活动记录。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

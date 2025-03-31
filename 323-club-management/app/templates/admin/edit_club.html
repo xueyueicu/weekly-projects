@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑社团 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">编辑社团</h3>
+            <a href="{{ url_for('admin.manage_clubs') }}" class="btn btn-sm btn-outline-light">返回社团列表</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">社团名称 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ club.name }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">社团简介 <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="description" name="description" rows="5" required>{{ club.description }}</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="type" class="form-label">社团类型 <span class="text-danger">*</span></label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="" {% if not club.type %}selected{% endif %}>请选择社团类型</option>
+                    {% for type in club_types %}
+                        <option value="{{ type }}" {% if club.type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="president_contact" class="form-label">联系方式</label>
+                <input type="text" class="form-control" id="president_contact" name="president_contact" value="{{ club.president_contact or '' }}">
+            </div>
+            
+            <div class="mb-3">
+                <label for="leader_id" class="form-label">社长</label>
+                <select class="form-select" id="leader_id" name="leader_id">
+                    <option value="">-- 请选择社长 --</option>
+                    {% for leader in leaders %}
+                        <option value="{{ leader.id }}" {% if club.leader_id == leader.id %}selected{% endif %}>
+                            {{ leader.real_name }} ({{ leader.username }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="teacher_id" class="form-label">指导老师</label>
+                <select class="form-select" id="teacher_id" name="teacher_id">
+                    <option value="">-- 请选择指导老师 --</option>
+                    {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}" {% if club.teacher_id == teacher.id %}selected{% endif %}>
+                            {{ teacher.real_name }} ({{ teacher.username }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <p><strong>创建时间:</strong> {{ club.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% if club.creator %}
+                <p><strong>创建者:</strong> {{ club.creator.real_name }} ({{ club.creator.username }})</p>
+                {% endif %}
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">保存更改</button>
+                <a href="{{ url_for('admin.manage_clubs') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

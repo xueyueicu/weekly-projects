@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}发布新活动 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">发布新活动</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('club.new_activity') }}">
+            <div class="mb-3">
+                <label for="title" class="form-label">活动标题</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">活动描述</label>
+                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="event_date" class="form-label">活动时间</label>
+                <input type="datetime-local" class="form-control" id="event_date" name="event_date" required>
+            </div>
+            <div class="mb-3">
+                <label for="location" class="form-label">活动地点</label>
+                <input type="text" class="form-control" id="location" name="location" required>
+            </div>
+            <div class="alert alert-info">
+                <p class="mb-0">提示：活动发布后需经过管理员审核才能显示。</p>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">发布活动</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">返回</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

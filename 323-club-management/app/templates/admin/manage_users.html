@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block title %}用户管理 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">用户管理</h3>
+    </div>
+    <div class="card-body">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>当前角色</th>
+                            <th>班级/关联</th>
+                            <th>邮箱</th>
+                            <th>电话</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.real_name }}</td>
+                                <td>
+                                    {% if user.role == 'super_admin' %}
+                                        <span class="badge bg-danger">超级管理员</span>
+                                    {% elif user.role == 'admin' %}
+                                        <span class="badge bg-warning">管理员</span>
+                                    {% elif user.role == 'club_leader' %}
+                                        <span class="badge bg-success">社长</span>
+                                    {% elif user.role == 'club_teacher' %}
+                                        <span class="badge bg-info">指导老师</span>
+                                    {% elif user.role == 'union' %}
+                                        <span class="badge bg-primary">社联</span>
+                                    {% elif user.role == 'student' %}
+                                        <span class="badge bg-secondary">学生</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.role == 'student' %}
+                                        {{ user.class_name or '-' }}
+                                    {% elif user.role == 'club_teacher' and user.leader %}
+                                        关联社长: {{ user.leader.real_name }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.email or '-' }}</td>
+                                <td>{{ user.phone or '-' }}</td>
+                                <td>
+                                    {% if show_role_form %}
+                                    <form action="{{ url_for('admin.update_user_role', user_id=user.id) }}{% if request.args.get('role') %}?role={{ request.args.get('role') }}{% endif %}" method="post" class="mb-2">
+                                        <div class="input-group input-group-sm">
+                                            <select name="role" class="form-select form-select-sm role-select">
+                                                <option value="student" {% if user.role == 'student' %}selected{% endif %}>学生</option>
+                                                <option value="club_leader" {% if user.role == 'club_leader' %}selected{% endif %}>社长</option>
+                                                <option value="club_teacher" {% if user.role == 'club_teacher' %}selected{% endif %}>指导老师</option>
+                                                <option value="union" {% if user.role == 'union' %}selected{% endif %}>社联</option>
+                                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>管理员</option>
+                                                {% if current_user.role == 'super_admin' %}
+                                                <option value="super_admin" {% if user.role == 'super_admin' %}selected{% endif %}>超级管理员</option>
+                                                {% endif %}
+                                            </select>
+                                            
+                                            <select name="leader_id" class="form-select form-select-sm leader-select" {% if user.role != 'club_teacher' %}style="display:none"{% endif %}>
+                                                <option value="">-- 选择关联社长 --</option>
+                                                {% for leader in club_leaders %}
+                                                <option value="{{ leader.id }}" {% if user.leader_id == leader.id %}selected{% endif %}>
+                                                    {{ leader.real_name }} ({{ leader.username }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            
+                                            <button type="submit" class="btn btn-primary btn-sm">更新</button>
+                                        </div>
+                                    </form>
+                                    
+                                    {% if current_user.id != user.id and (current_user.role == 'super_admin' or (current_user.role == 'admin' and user.role != 'super_admin')) %}
+                                    <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('确定要删除用户 {{ user.username }} 吗？此操作不可撤销!');">
+                                        <button type="submit" class="btn btn-danger btn-sm w-100">删除</button>
+                                    </form>
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">当前没有用户。</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="card-footer">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <form action="{{ url_for('admin.manage_users') }}" method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="搜索用户名、姓名、邮箱或手机号" value="{{ request.args.get('search', '') }}">
+                    <button type="submit" class="btn btn-primary">搜索</button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    筛选用户
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 筛选模态框 -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">筛选用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('admin.manage_users') }}" method="get">
+                    <div class="mb-3">
+                        <label for="role" class="form-label">按角色筛选</label>
+                        <select name="role" id="filterRole" class="form-select">
+                            <option value="">所有角色</option>
+                            <option value="super_admin">超级管理员</option>
+                            <option value="admin">管理员</option>
+                            <option value="club_leader">社长</option>
+                            <option value="club_teacher">指导老师</option>
+                            <option value="union">社联</option>
+                            <option value="student">学生</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">应用筛选</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 当角色选择改变时，显示/隐藏社长选择框
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelects = document.querySelectorAll('.role-select');
+        
+        roleSelects.forEach(function(select) {
+            select.addEventListener('change', function() {
+                const form = this.closest('form');
+                const leaderSelect = form.querySelector('.leader-select');
+                
+                if (leaderSelect) {
+                    leaderSelect.style.display = this.value === 'club_teacher' ? 'block' : 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

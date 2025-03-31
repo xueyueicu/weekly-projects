@@ -1,0 +1,50 @@
+{% if activities %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>时间</th>
+                    <th>地点</th>
+                    <th>人数</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in activities %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}">
+                                {{ activity.title }}
+                            </a>
+                        </td>
+                        <td>{{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ activity.location }}</td>
+                        <td>{{ activity.max_participants if activity.max_participants > 0 else '不限' }}</td>
+                        <td>
+                            {% if activity.approved %}
+                                <span class="badge bg-success">已审核</span>
+                            {% else %}
+                                <span class="badge bg-warning">待审核</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('club.edit_activity', activity_id=activity.id) }}" class="btn btn-sm btn-primary">编辑</a>
+                                <form action="{{ url_for('club.delete_activity', activity_id=activity.id) }}" method="post" class="ms-1" onsubmit="return confirm('确定要删除此活动吗？');">
+                                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                                </form>
+                                <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-info ms-1">查看</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p class="mb-0">暂无活动记录。</p>
+    </div>
+{% endif %} 
