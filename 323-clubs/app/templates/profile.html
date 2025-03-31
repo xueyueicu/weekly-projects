@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block title %}个人资料 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- 个人信息卡片 -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">个人信息</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>用户名：</strong> {{ current_user.username }}</p>
+                    <p><strong>姓名：</strong> {{ current_user.real_name }}</p>
+                    <p><strong>角色：</strong> 
+                        {% if current_user.is_super_admin %}
+                            超级管理员
+                        {% elif current_user.is_admin %}
+                            管理员
+                        {% elif current_user.is_club_leader %}
+                            社团社长
+                        {% elif current_user.is_club_teacher %}
+                            社团指导老师
+                        {% elif current_user.is_union %}
+                            社联
+                        {% else %}
+                            学生
+                        {% endif %}
+                    </p>
+                    <p><strong>邮箱：</strong> {{ current_user.email }}</p>
+                    <p><strong>手机号：</strong> {{ current_user.phone }}</p>
+                    <a href="{{ url_for('main.edit_profile') }}" class="btn btn-primary">编辑资料</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 已报名活动 -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">已报名的活动</h5>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_activities %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>活动名称</th>
+                                        <th>社团</th>
+                                        <th>时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for registration in enrolled_activities %}
+                                        {% set activity = registration.activity %}
+                                        {% set is_past = activity.event_date < current_time %}
+                                        <tr class="{% if is_past %}table-secondary{% else %}table-success{% endif %}">
+                                            <td>{{ activity.title }}</td>
+                                            <td>{{ activity.club.name }}</td>
+                                            <td>{{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% if is_past %}
+                                                    <span class="badge bg-secondary">已结束</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">即将开始</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">您还没有报名任何活动</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 所属社团 -->
+        {% if user_clubs %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">所属社团</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for club_info in user_clubs %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ club_info.club.name }}</h5>
+                                        <p class="card-text">
+                                            <strong>角色：</strong> {{ club_info.role }}<br>
+                                            <strong>类型：</strong> {{ club_info.club.type }}<br>
+                                            <strong>描述：</strong> {{ club_info.club.description|truncate(100) }}
+                                        </p>
+                                        <a href="{{ url_for('club.club_home', club_id=club_info.club.id) }}" class="btn btn-primary">查看社团主页</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

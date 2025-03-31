@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}活动评分 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">活动评分</h3>
+    </div>
+    <div class="card-body">
+        <h4>{{ activity.title }}</h4>
+        <p><strong>社团：</strong>{{ activity.club.name }}</p>
+        <p><strong>活动时间：</strong>{{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>活动地点：</strong>{{ activity.location }}</p>
+        <div class="alert alert-info mb-4">
+            <h5>活动描述</h5>
+            <p>{{ activity.description }}</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('admin.score_activity', activity_id=activity.id) }}">
+            <div class="mb-4">
+                <label for="score" class="form-label"><strong>评分 (0-10分)</strong></label>
+                <input type="range" class="form-range" min="0" max="10" step="0.5" id="score" name="score" oninput="showScoreValue(this.value)">
+                <div class="text-center">
+                    <span id="scoreValue" class="badge bg-primary fs-5">5</span>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">提交评分</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">返回</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showScoreValue(value) {
+        document.getElementById('scoreValue').textContent = value;
+    }
+</script>
+{% endblock %} 

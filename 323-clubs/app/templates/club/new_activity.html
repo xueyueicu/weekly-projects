@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}发布新活动 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">发布新活动</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">活动标题 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" required>
+                <small class="text-muted">简明扼要，不超过30个字</small>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="event_date" class="form-label">活动时间 <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="event_date" name="event_date" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="location" class="form-label">活动地点 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="location" name="location" required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="max_participants" class="form-label">人数限制</label>
+                <input type="number" class="form-control" id="max_participants" name="max_participants" min="0" value="0">
+                <small class="text-muted">0表示不限制人数</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">活动简述 <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="description" name="description" rows="10" required></textarea>
+                <small class="text-muted">详细描述活动内容、目的、流程等</small>
+            </div>
+            
+            <div class="alert alert-info">
+                <h5>注意事项：</h5>
+                <ol>
+                    <li>活动发布后需经过管理员或指导老师审核才能显示</li>
+                    <li>活动一旦审核通过，如需修改内容需要重新审核</li>
+                    <li>请确保活动信息真实、准确，避免误导学生</li>
+                </ol>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('club.my_club') }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-success">发布活动</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

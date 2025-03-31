@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}首页 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="jumbotron mb-4">
+    <h1 class="display-4">欢迎使用社团管理系统</h1>
+    <p class="lead">这里汇集了学校所有社团及其活动信息，您可以浏览社团介绍、查看活动详情、报名参加活动。</p>
+    {% if not current_user.is_authenticated %}
+    <hr class="my-4">
+    <p>还没有账号？立即注册加入我们！</p>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary me-md-2">登录</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-success">注册</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 未来活动 -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">即将开始的活动</h3>
+            <a href="{{ url_for('main.activity_calendar') }}" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-calendar3"></i> 查看日历
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if future_activities %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for activity in future_activities %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="text-decoration-none text-white">
+                                        {{ activity.title }}
+                                    </a>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>社团：</strong> <a href="{{ url_for('club.club_home', club_id=activity.club.id) }}">{{ activity.club.name }}</a></p>
+                                <p><strong>时间：</strong> {{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <p><strong>地点：</strong> {{ activity.location }}</p>
+                                <p>{{ activity.description|truncate(100) }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-success">查看详情</a>
+                                    <small class="text-muted">{{ activity.published_at.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">暂无即将开始的活动</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 以往活动 -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">以往活动</h3>
+            <a href="{{ url_for('main.activity_calendar') }}" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-calendar3"></i> 查看日历
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if past_activities %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for activity in past_activities %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="card-title mb-0">
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="text-decoration-none text-white">
+                                        {{ activity.title }}
+                                    </a>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>社团：</strong> <a href="{{ url_for('club.club_home', club_id=activity.club.id) }}">{{ activity.club.name }}</a></p>
+                                <p><strong>时间：</strong> {{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <p><strong>地点：</strong> {{ activity.location }}</p>
+                                <p>{{ activity.description|truncate(100) }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('main.view_activity', activity_id=activity.id) }}" class="btn btn-sm btn-secondary">查看详情</a>
+                                    <small class="text-muted">{{ activity.published_at.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">暂无以往活动</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 社团展示 -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">社团展示</h3>
+    </div>
+    <div class="card-body">
+        {% if clubs %}
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4">
+                {% for club in clubs %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{ club.name }}</h5>
+                                {% if club.type %}
+                                    <span class="badge 
+                                        {% if club.type == '科技类' %}bg-info
+                                        {% elif club.type == '公益类' %}bg-success
+                                        {% elif club.type == '学术类' %}bg-primary
+                                        {% elif club.type == '活动类' %}bg-warning
+                                        {% elif club.type == '文化类' %}bg-secondary
+                                        {% elif club.type == '体育类' %}bg-danger
+                                        {% elif club.type == '艺术类' %}bg-dark
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ club.type }}
+                                    </span>
+                                {% endif %}
+                                <p class="mt-2">
+                                    <a href="{{ url_for('club.club_home', club_id=club.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">暂无社团</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

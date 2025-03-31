@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}社长申请审核 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">社长申请审核</h3>
+    </div>
+    <div class="card-body">
+        {% if pending_leaders %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>申请社团</th>
+                            <th>联系方式</th>
+                            <th>申请时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leader in pending_leaders %}
+                            <tr>
+                                <td>{{ leader.id }}</td>
+                                <td>{{ leader.username }}</td>
+                                <td>{{ leader.real_name }}</td>
+                                <td>{{ leader.club_name }}</td>
+                                <td>
+                                    {% if leader.email %}邮箱: {{ leader.email }}<br>{% endif %}
+                                    {% if leader.phone %}电话: {{ leader.phone }}{% endif %}
+                                </td>
+                                <td>{{ leader.created_at.strftime('%Y-%m-%d %H:%M') if leader.created_at else '-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <form action="{{ url_for('admin.approve_leader', user_id=leader.id) }}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-success">批准</button>
+                                        </form>
+                                        <form action="{{ url_for('admin.reject_leader', user_id=leader.id) }}" method="post" class="ms-1" onsubmit="return confirm('确定要拒绝该社长申请吗？此操作将把用户角色改为学生');">
+                                            <button type="submit" class="btn btn-sm btn-danger">拒绝</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">当前没有待审核的社长申请。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

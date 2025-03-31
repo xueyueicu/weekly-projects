@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑活动 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">编辑活动</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">活动标题 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ activity.title }}" required>
+                <small class="text-muted">简明扼要，不超过30个字</small>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="event_date" class="form-label">活动时间 <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="event_date" name="event_date" value="{{ activity.event_date.strftime('%Y-%m-%dT%H:%M') }}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="location" class="form-label">活动地点 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="location" name="location" value="{{ activity.location }}" required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="max_participants" class="form-label">人数限制</label>
+                <input type="number" class="form-control" id="max_participants" name="max_participants" min="0" value="{{ activity.max_participants }}">
+                <small class="text-muted">0表示不限制人数</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">活动简述 <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="description" name="description" rows="10" required>{{ activity.description }}</textarea>
+                <small class="text-muted">详细描述活动内容、目的、流程等</small>
+            </div>
+            
+            {% if activity.approved %}
+            <div class="alert alert-warning">
+                <p class="mb-0"><strong>注意：</strong> 此活动已审核通过，修改后需要重新审核才能显示在首页和社团主页。</p>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0"><strong>提示：</strong> 此活动尚未审核通过，编辑后需等待审核才能显示在首页和社团主页。</p>
+            </div>
+            {% endif %}
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('club.my_club') }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">保存更改</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

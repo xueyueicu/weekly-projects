@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% block title %}评论审核 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">评论审核</h3>
+    </div>
+    <div class="card-body">
+        <!-- 评论列表 -->
+        {% if comments %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>评论内容</th>
+                            <th>评论者</th>
+                            <th>所属活动</th>
+                            <th>评论时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in comments %}
+                            <tr>
+                                <td>{{ comment.id }}</td>
+                                <td>{{ comment.content[:100] }}{% if comment.content|length > 100 %}...{% endif %}</td>
+                                <td>
+                                    {% if comment.user %}
+                                        {{ comment.user.real_name }} ({{ comment.user.username }})
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if comment.activity %}
+                                        <a href="{{ url_for('main.view_activity', activity_id=comment.activity.id) }}" target="_blank">
+                                            {{ comment.activity.title[:30] }}{% if comment.activity.title|length > 30 %}...{% endif %}
+                                        </a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <form action="{{ url_for('admin.approve_comment', comment_id=comment.id) }}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-success">通过</button>
+                                        </form>
+                                        <form action="{{ url_for('admin.delete_comment', comment_id=comment.id) }}" method="post" onsubmit="return confirm('确定要删除此评论吗？此操作无法撤销!');">
+                                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#commentModal{{ comment.id }}">
+                                            详情
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- 评论详情模态框 -->
+                            <div class="modal fade" id="commentModal{{ comment.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">评论详情</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>评论者：</strong> 
+                                                {% if comment.user %}
+                                                    {{ comment.user.real_name }} ({{ comment.user.username }})
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </p>
+                                            <p><strong>评论时间：</strong> {{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '-' }}</p>
+                                            <p><strong>所属活动：</strong> 
+                                                {% if comment.activity %}
+                                                    <a href="{{ url_for('main.view_activity', activity_id=comment.activity.id) }}" target="_blank">
+                                                        {{ comment.activity.title }}
+                                                    </a>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </p>
+                                            <hr>
+                                            <h5>评论内容：</h5>
+                                            <div class="p-3 border rounded bg-light">
+                                                {{ comment.content }}
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <form action="{{ url_for('admin.approve_comment', comment_id=comment.id) }}" method="post">
+                                                <button type="submit" class="btn btn-success">通过审核</button>
+                                            </form>
+                                            <form action="{{ url_for('admin.delete_comment', comment_id=comment.id) }}" method="post" class="me-2" onsubmit="return confirm('确定要删除此评论吗？此操作无法撤销!');">
+                                                <button type="submit" class="btn btn-danger">删除评论</button>
+                                            </form>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">当前没有待审核的评论。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
